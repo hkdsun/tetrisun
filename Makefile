@@ -1,33 +1,35 @@
 TARGET = main
 LIBS = -lm -lncurses
 CC = gcc
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -std=c11
 
 SRC_DIR = src
 BIN_DIR = bin
+OBJ_DIR = build
 
 .PHONY: default all clean mkbin run
 
-default: mkbin $(TARGET) run
+default: mkbin $(TARGET)
 all: default
 
-OBJECTS = $(patsubst %.c, %.o, $(wildcard src/*.c))
-HEADERS = $(wildcard src/*.h)
-
-$(SRC_DIR)/%.o: %.c $(HEADERS)
-	$(CC) $(CFLAGS) -c $< -o $@
+OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(wildcard $(SRC_DIR)/*.c))
+HEADERS = $(wildcard $(SRC_DIR)/*.h)
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) -Wall $(LIBS) -o $(BIN_DIR)/$@
 
 clean:
 	-rm -f *.o
-	-rm -rf $(BIN_DIR)
+	-rm -rf $(BIN_DIR) $(OBJ_DIR)
 
 mkbin:
 	-mkdir -p $(BIN_DIR)
+	-mkdir -p $(OBJ_DIR)
 
-run:
+run: mkbin $(TARGET)
 	-bin/main

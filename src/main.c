@@ -2,8 +2,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-
-chtype nsquare = (chtype) ' '|A_REVERSE;
+#include "tetris.h"
 
 #define BOARD_COLS 10
 #define BOARD_ROWS 20
@@ -13,9 +12,11 @@ void destroy_win(WINDOW *local_win);
 
 int main(int argc, char *argv[])
 {
-  WINDOW *board_win;
+  WINDOW * board_win;
   int startx, starty, width, height;
   int ch;
+
+  Game * game = create_game();
 
   initscr();
   cbreak();
@@ -30,10 +31,12 @@ int main(int argc, char *argv[])
   board_win = create_newwin(height, width, starty, startx);
 
   while((ch = getch()) != 'q') {
+    tick(game);
+    render(board_win, game);
     wrefresh(board_win);
   }
 
-  endwin();			/* End curses mode		  */
+  endwin();
   return 0;
 }
 
