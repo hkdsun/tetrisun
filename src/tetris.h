@@ -5,9 +5,13 @@
 #include <string.h>
 
 #include "render.h"
+#include "board.h"
 
 #define B_COLS 10
 #define B_ROWS 20
+
+#define BOARD_COLS 10
+#define BOARD_ROWS 20
 
 #define TET_ROWS 2
 #define TET_COLS 4
@@ -34,41 +38,21 @@ typedef struct {
   TetPos pos;
   TetShape shape;
   int placed;
+  int dir_left;
 } Tet;
-
-typedef struct {
-  int rows;
-  int cols;
-  char ** bitmap;
-} Board;
 
 typedef struct {
   int paused;
   int speed_ticks; // TODO change to ms
   int ticks;
+  int rows;
+  int cols;
   Tet * falling;
   Board * board;
-} Game;
+  Render * render;
+} TetrisGame;
 
-Tet rand_tet();
-Tet create_tet(TetType type);
-
-void erase_tet(Tet * tet, Board * board);
-void place_tet(Tet * tet, Board * board);
-
-Game * create_game();
-void destroy_game(Game * game);
-
-Board * create_board(int rows, int cols);
-void destroy_board(Board * board);
-
-void update_tet(Tet * tet, Board * board);
-
-int * complete_rows(Board * board);
-void clear_rows(Board * board, int rows[]);
-void tick(Game * game);
-void advance(Game * game);
-void drop_tet(Game * game, Tet * tet);
-void render(WINDOW *win, Game *game);
+TetrisGame * create_game();
+void destroy_game(TetrisGame * game);
 
 #endif /* ifndef TETRIS_H */
