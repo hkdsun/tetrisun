@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "render.h"
 #include "board.h"
@@ -17,7 +18,6 @@
 #define TET_COLS 4
 #define TET_NUM 7
 
-extern const int tet_shapes[TET_NUM][TET_ROWS][TET_COLS];
 typedef enum {
   I, O, T, S, Z, IL, L
 } TetType;
@@ -37,7 +37,6 @@ typedef struct {
   TetType type;
   TetPos pos;
   TetShape shape;
-  int placed;
   int dir_left;
 } Tet;
 
@@ -51,6 +50,8 @@ typedef struct {
   Board * board;
   Render * render;
 } TetrisGame;
+
+extern const TetShape tet_shapes[TET_NUM];
 
 TetrisGame * create_game();
 void destroy_game(TetrisGame * game);

@@ -1,13 +1,13 @@
 #include "tetris.h"
 
-const int tet_shapes[TET_NUM][TET_ROWS][TET_COLS] = {
-  { 2, 2, {{1,1,0,0}, {1,1,0,0}} },
-  { 0, 0, {{1,1,1,1}, {0,0,0,0}} },
-  { 0, 0, {{1,1,1,1}, {0,0,0,0}} },
-  { 0, 0, {{1,1,1,1}, {0,0,0,0}} },
-  { 0, 0, {{1,1,1,1}, {0,0,0,0}} },
-  { 0, 0, {{1,1,1,1}, {0,0,0,0}} },
-  { 0, 0, {{1,1,1,1}, {0,0,0,0}} }
+const TetShape tet_shapes[TET_NUM] = {
+  { 1, 4, {{1,1,1,1}, {0,0,0,0}} }, // I
+  { 2, 2, {{1,1,0,0}, {1,1,0,0}} }, // O
+  { 2, 3, {{0,1,0,0}, {1,1,1,0}} }, // T
+  { 2, 3, {{0,1,1,0}, {1,1,0,0}} }, // S
+  { 2, 3, {{1,1,0,0}, {0,1,1,0}} }, // Z
+  { 2, 3, {{1,1,1,0}, {0,0,1,0}} }, // IL
+  { 2, 3, {{1,0,0,0}, {1,1,1,0}} }  // L
 };
 
 Tet * rand_tet();
@@ -19,13 +19,13 @@ void place_tet(Tet * tet, Board * board);
 Board * create_board(int rows, int cols);
 void destroy_board(Board * board);
 
-void update_tet_pos(Tet * tet, Board * board);
+void update_tet_pos(Tet * tet, Board * board, TetPos pos);
 
 int * complete_rows(Board * board);
 void clear_rows(Board * board, int rows[]);
 
 void drop_tet(TetrisGame * game, Tet * tet);
-void lower_falling(TetrisGame * game);
+int lower_falling(TetrisGame * game);
 
 void render_frame(TetrisGame * game);
 void tick(TetrisGame * game);
@@ -44,40 +44,51 @@ void run(TetrisGame * game) {
   }
 }
 
+void print_board(Board * board) {
+  char ** bitmap = board->bitmap;
+
+  for (int i = 0; i < board->rows; ++i) {
+    for (int j = 0; j < board->cols; ++j) {
+      fprintf(stderr, "%d ", bitmap[i][j]);
+    }
+    fprintf(stderr, "\n");
+  }
+}
+
 void tick(TetrisGame * game) {
   if(game->ticks % game->speed_ticks * 10 == 0) {
     Tet * tet = rand_tet();
     drop_tet(game, tet);
   }
 
-  lower_falling(game);
+  if(lower_falling(game)) {
+    Tet * tet = rand_tet();
+    drop_tet(game, tet);
+  }
+
   game->ticks++;
 }
 
-void lower_falling(TetrisGame * game) {
-  game->falling->pos.row += 1;
+int lower_falling(TetrisGame * game) {
+  TetPos pos;
 
-  if(game->falling->dir_left) {
-    game->falling->pos.col += 2;
+  pos.row = game->falling->pos.row + 1;
+  pos.col = game->falling->pos.col;
 
-    if(game->falling->pos.col > 9) {
-      game->falling->dir_left ^= 1;
-    }
-  } else {
-    game->falling->pos.col -= 2;
+  if(pos.row > BOARD_ROWS - game->falling->shape.rows) return 1;
 
-    if(game->falling->pos.col < 0) {
-      game->falling->dir_left ^= 1;
-    }
-  }
-  update_tet_pos(game->falling, game->board);
+  update_tet_pos(game->falling, game->board, pos);
+
+  return 0;
 }
 
 void drop_tet(TetrisGame * game, Tet * tet) {
   game->falling = tet;
+
   tet->pos.row = 0;
   tet->pos.col = game->board->cols/2 - tet->shape.cols/2;
-  update_tet_pos(tet, game->board);
+
+  update_tet_pos(tet, game->board, tet->pos);
 }
 
 void erase_tet(Tet * tet, Board * board) {
@@ -106,13 +117,15 @@ void place_tet(Tet * tet, Board * board) {
   }
 }
 
-void update_tet_pos(Tet * tet, Board * board) {
-  if(tet->placed) {
-    erase_tet(tet, board);
-  }
+void update_tet_pos(Tet * tet, Board * board, TetPos new_pos) {
+  fprintf(stderr, "e %d %d\n", tet->pos.row, tet->pos.col);
+  erase_tet(tet, board);
 
+  tet->pos.row = new_pos.row;
+  tet->pos.col = new_pos.col;
+
+  fprintf(stderr, "n %d %d\n", tet->pos.row, tet->pos.col);
   place_tet(tet, board);
-  tet->placed = 1;
 }
 
 TetrisGame * create_game() {
@@ -125,13 +138,17 @@ TetrisGame * create_game() {
   game->board = create_board(B_ROWS, B_COLS);
   game->render = init_render(game->board);
 
+  srand(time(NULL));
+
   return game;
 }
 
 Tet * rand_tet() {
   // TODO make random
   Tet * tet = malloc(sizeof(Tet));
-  *tet = create_tet(I);
+
+  int shape = rand() % TET_NUM;
+  *tet = create_tet(T);
 
   return tet;
 }
@@ -143,9 +160,8 @@ Tet create_tet(TetType type) {
   tet.type = I;
   tet.pos.row = -1;
   tet.pos.col = -1;
-  tet.placed = 0;
-  tet.dir_left = 0;
-  memcpy(&tet.shape, tet_shapes[I], sizeof(TetShape));
+  tet.dir_left = 1;
+  memcpy(&tet.shape, &tet_shapes[type], sizeof(TetShape));
 
   return tet;
 }
@@ -167,7 +183,6 @@ void destroy_game(TetrisGame * game) {
   destroy_board(game->board);
   destroy_render(game->render);
 
-  free(game->render);
   free(game);
 }
 

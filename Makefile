@@ -32,4 +32,4 @@ mkbin:
 	-mkdir -p $(OBJ_DIR)
 
 run: mkbin $(TARGET)
-	-bin/main
+	-bin/main 2>debug

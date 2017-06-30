@@ -46,6 +46,7 @@ void next_frame(Render * render) {
   char ** bitmap = render->board->bitmap;
 
   render_bitmap(render->win, bitmap, render->board->rows, render->board->cols);
+
   wrefresh(render->win);
 }
 
@@ -54,6 +55,8 @@ void render_bitmap(WINDOW * win, char ** bitmap, int rows, int cols) {
     for (int j = 0; j < cols; ++j) {
       if(bitmap[i][j] == 'x') {
         render_char(win, i + 1, j * 2 + 1, square);
+      } else {
+        render_char(win, i + 1, j * 2 + 1, ' ');
       }
     }
   }
