@@ -14,13 +14,17 @@
 #define BOARD_COLS 10
 #define BOARD_ROWS 20
 
-#define TET_ROWS 2
+#define TET_ROWS 4
 #define TET_COLS 4
 #define TET_NUM 7
 
 typedef enum {
   I, O, T, S, Z, IL, L
 } TetType;
+
+typedef enum {
+  O_0, O_1, O_2, O_3
+} TetOrien;
 
 typedef struct {
   int row;
@@ -37,6 +41,7 @@ typedef struct {
   TetType type;
   TetPos pos;
   TetShape shape;
+  TetOrien orientation;
   int dir_left;
 } Tet;
 
@@ -46,6 +51,7 @@ typedef struct {
   int ticks;
   int rows;
   int cols;
+  int over;
   Tet * falling;
   Board * board;
   Render * render;
@@ -55,5 +61,6 @@ extern const TetShape tet_shapes[TET_NUM];
 
 TetrisGame * create_game();
 void destroy_game(TetrisGame * game);
+void run(TetrisGame * gmae);
 
 #endif /* ifndef TETRIS_H */

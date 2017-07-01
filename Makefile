@@ -7,7 +7,7 @@ SRC_DIR = src
 BIN_DIR = bin
 OBJ_DIR = build
 
-.PHONY: default all clean mkbin run
+.PHONY: default all clean mkbin run grind
 
 default: mkbin $(TARGET)
 all: default
@@ -30,6 +30,9 @@ clean:
 mkbin:
 	-mkdir -p $(BIN_DIR)
 	-mkdir -p $(OBJ_DIR)
+
+grind: mkbin $(TARGET)
+	-valgrind --leak-check=full bin/main 2>debug
 
 run: mkbin $(TARGET)
 	-bin/main 2>debug

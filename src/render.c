@@ -8,7 +8,6 @@ void destroy_win(WINDOW *local_win);
 Render * init_render(Board * board) {
   Render * render = malloc(sizeof(Render));
   int startx, starty, width, height;
-  WINDOW * board_win;
 
   initscr();
   cbreak();
@@ -29,9 +28,9 @@ Render * init_render(Board * board) {
   return render;
 }
 
-destroy_render(Render * render) {
-  endwin();
+void destroy_render(Render * render) {
   destroy_win(render->win);
+  endwin();
   free(render);
 }
 
